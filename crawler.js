@@ -6,6 +6,7 @@
 
 var cheerio = require('cheerio');
 var axios = require('axios');
+var axiosRetry  = require('axios-retry');
 
 // var URL = require('url-parse');
 // var url = new URL(START_URL);
@@ -16,7 +17,7 @@ var axios = require('axios');
  * @return {Promise.<string>}
  */
 
- const url = "http://localhost:8080";
+const url = "http://localhost:8080";
 
 module.exports = (url) => {
   return new Promise(async (resolve, reject) => {
@@ -52,7 +53,8 @@ module.exports = (url) => {
 
 
 async function fetchHTML(url){
-    let response = await axios.get(url).then((res) => res.data).catch((err) => console.log(err));
+    axiosRetry(axios, { retries: 3 });
+    let response = await axios.get(url, {timeout: 30000}).then((res) => res.data).catch((err) => console.log(err));
 
     const html = response;
     const $ = cheerio.load(html);
