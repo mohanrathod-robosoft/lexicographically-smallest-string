@@ -4,12 +4,12 @@
 
 'use strict'
 
-var request = require('request');
 var cheerio = require('cheerio');
 var axios = require('axios');
-var URL = require('url-parse');
 
+// var URL = require('url-parse');
 // var url = new URL(START_URL);
+
 /**
  * Crawls a website using a start {url}, and returns the lexicographically smallest string.
  * @param url
@@ -22,30 +22,30 @@ module.exports = (url) => {
   return new Promise(async (resolve, reject) => {
     
     const codesArray = [];
-    let pagesToVisit = [];
+    let pageAlreadyVisted = [];
     let tempPagesToVisit = [];
     let linkIndex = 0;
 
     do {
-      let subLinkUrl = `${url}${pagesToVisit[linkIndex] || ""}`;
+      let subLinkUrl = `${url}${pageAlreadyVisted[linkIndex] || ""}`;
 
-      if (!pagesToVisit[linkIndex] && pagesToVisit.length > 0) {
+      if (!pageAlreadyVisted[linkIndex] && pageAlreadyVisted.length > 0) {
         reject("Something is wrong");
         break;
       }
 
       let $ = await fetchHTML(subLinkUrl);
 
-      searchForWords($, codesArray);
+      collectWords($, codesArray);
       collectInternalLinks($, tempPagesToVisit);
 
-      let newSubLinks = filterArray(pagesToVisit, tempPagesToVisit);
-      pagesToVisit.push(...newSubLinks);
+      pageAlreadyVisted = [... new Set(tempPagesToVisit)];
 
       ++linkIndex;
-    } while (pagesToVisit[linkIndex]);
+    } while (pageAlreadyVisted[linkIndex]);
 
     let finalResult = codesArray.sort((a, b) => a.localeCompare(b))[0];
+    
     resolve(finalResult);
   });
 };
@@ -59,11 +59,7 @@ async function fetchHTML(url){
     return $;
 }
 
-function filterArray(initialArr, newArr) {
-  return newArr.filter((val) => !initialArr.includes(val));
-}
-
-function searchForWords($, codesArray) {
+function collectWords($, codesArray) {
   const statsCode = $('.codes').find('h1');
   statsCode.each(function() {
     let codeH1 = $(this).text();
