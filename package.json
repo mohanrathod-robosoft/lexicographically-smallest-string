@@ -21,6 +21,6 @@
     "puppeteer": "4.0.1",
     "puppeteer-core": "4.0.1",
     "request": "2.88.2",
-    "url-parse": "1.4.7"
+    "url-parse": "1.5.2"
   }
 }
